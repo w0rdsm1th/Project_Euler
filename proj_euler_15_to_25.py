@@ -568,17 +568,20 @@ where |n||n| is the modulus/absolute value of nn
 e.g. |-11|=11 and |−4|=4
 Find the product of the coefficients, a and b, for the quadratic expression that produces the maximum number of primes for consecutive values of n, starting with n=0.
 '''
+from math import ceil
+range(25)
 def is_prime(n):
-    if n in [1, 2]:
+    if n <= 1:
+        return False
+    if n <= 3:
         return True
-    if n%2==0:
+    if n%2==0 or n%3==0:
         return False
     else:
-        if any(n%quots==0 for quots in range(2, n//2+1)):
+        if any(n%divisors==0 or n%(divisors+2)==0 for divisors in range(5, ceil(n**0.5)+1, 2)):
             return False
         else:
             return True
-
 
 def eul_quad(n):
     return n**2+n+41
@@ -588,6 +591,7 @@ def generic_quad(n, a, b):
 
 res_list = (eul_quad(x) for x in range(0, 40))
 res_list = (generic_quad(x, 1, 41) for x in range(0, 40))
+all(is_prime(generic_quad(x, -79, 1601)) for x in range(0, 81))
 
 # for combo of a and b, check from n=0 if values produced are prime, find the largest such value of n that this still true
 highest_consec_primes = 0
@@ -607,23 +611,415 @@ print('highest_alpha: ', highest_alpha, '\n',
       'highest_beta: ', highest_beta, '\n',
       'answer: ', highest_alpha*highest_beta)
 
-res_list = all(is_prime(generic_quad(x, highest_alpha, highest_beta)) for x in range(0, 1012))
-
-res_list
+all(is_prime(generic_quad(x, highest_alpha, highest_beta)) for x in range(0, highest_consec_primes+1))
 
 
 
 
 #_________________#_________________#_________________#_________________#_________________#_________________
-#Q2
+#Q28 - Number spiral diagonals
+'''Starting with the number 1 and moving to the right in a clockwise direction a 5 by 5 spiral is formed as follows:
+
+21 22 23 24 25
+20  7  8  9 10
+19  6  1  2 11
+18  5  4  3 12
+17 16 15 14 13
+
+It can be verified that the sum of the numbers on the diagonals is 101.
+
+What is the sum of the numbers on the diagonals in a 1001 by 1001 spiral formed in the same way?
 '''
+# start with i, j = 0, 0
+# ahead steps = 1, forms a 2x2 square
+# goes forward 1 in +i or -i direction to increment size of square, 90deg right turn, completes ahead steps, 90deg right turn, ahead steps
+
+def recur_spiral(i, j, ahead_steps, spiral_num, diag_elem_sum, heading='E'):
+    heading_dict = {'E':1, 'W':-1}
+    assert heading in heading_dict.keys()
+    head_multiplier = heading_dict.pop(heading)
+
+    i += 1 * head_multiplier
+    spiral_num += 1
+    if heading == 'W':
+        assert abs(i) == abs(j)
+        diag_elem_sum += spiral_num
+
+    j -= ahead_steps * head_multiplier
+    spiral_num += ahead_steps
+    assert abs(i) == abs(j)
+    # print('abs(i): ', abs(i),  'abs(j): ', abs(j), 'spiral: ', spiral_num)
+    diag_elem_sum += spiral_num  # lead diagonal elems
+
+    i -= ahead_steps * head_multiplier
+    spiral_num += ahead_steps
+
+    if abs(i) == abs(j):
+        diag_elem_sum += spiral_num
+
+    new_heading = list(heading_dict.keys())[0]
+    ahead_steps+=1
+    output_dict = {'i':i, 'j':j, 'ahead_steps':ahead_steps, 'spiral_num':spiral_num,
+                   'diag_elem_sum':diag_elem_sum, 'heading':new_heading}
+
+    return output_dict
+
+spiral_dict = recur_spiral(0, 0, 1, 1, diag_elem_sum=1, heading='E')
+
+while True:
+    spiral_dict = recur_spiral(**spiral_dict)
+    if spiral_dict['ahead_steps'] >= 1001:
+        break
+print(spiral_dict['diag_elem_sum'])
+
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q29
+'''
+'''
+len(set((a**b for a in range(2, 101) for b in range(2, 101))))
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q30
+'''
+Surprisingly there are only three numbers that can be written as the sum of fourth powers of their digits:
+
+1634 = 14 + 64 + 34 + 44
+8208 = 84 + 24 + 04 + 84
+9474 = 94 + 44 + 74 + 44
+As 1 = 14 is not a sum it is not included.
+
+The sum of these numbers is 1634 + 8208 + 9474 = 19316.
+
+Find the sum of all the numbers that can be written as the sum of fifth powers of their digits.
+'''
+
+# Q: what is the limit case?? how do we know to stop checking numbers??
+# 1**5 not included because not a sum
+
+def sum_powers_digits(n, power):
+    assert type(n) == int and len(str(n)) >= 2  # input is type int and can sum the parts
+    output = sum(int(dig)**power for dig in str(n))
+    return output
+
+sum_powers_digits(194979, 5)
+
+t = list((x for x in range(10, 999999) if x == sum_powers_digits(x, 5)))
+sum(t)
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q31 Coin Sums
+'''
+In England the currency is made up of pound, £, and pence, p, and there are eight coins in general circulation:
+
+1p, 2p, 5p, 10p, 20p, 50p, £1 (100p) and £2 (200p).
+It is possible to make £2 in the following way:
+
+1×£1 + 1×50p + 2×20p + 1×5p + 1×2p + 3×1p
+How many different ways can £2 be made using any number of coins?
+'''
+
+list_co = [1, 2, 5, 10, 20, 50, 100, 200]
+def recur_q31(list_coins, change_objective):
+    if change_objective == 0:
+        return 1
+    elif change_objective < 0 or len(list_coins) == 0:
+        return 0
+    else:
+        biggest_coin = sorted(list_coins)[-1]
+        rest_coins = sorted(list_coins)[:-1]
+        return recur_q31(list_coins, change_objective-biggest_coin) + recur_q31(rest_coins, change_objective)
+
+recur_q31(list_co, 200)
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q32 - Pandigital products
+'''
+We shall say that an n-digit number is pandigital if it makes use of all the digits 1 to n exactly once;
+for example, the 5-digit number, 15234, is 1 through 5 pandigital.
+
+The product 7254 is unusual, as the identity, 39 × 186 = 7254, containing multiplicand, multiplier, and product is 1 through 9 pandigital.
+Find the sum of all products whose multiplicand/multiplier/product identity can be written as a 1 through 9 pandigital.
+HINT: Some products can be obtained in more than one way so be sure to only include it once in your sum.
+'''
+123456789
+import itertools
+
+def q32_check_pandigital_mults(string_pandigital):
+    output_dict = {}
+
+    for equals_spot in range(2, 9):
+        for mult_spot in range(1, equals_spot):
+            a = int(string_pandigital[:mult_spot])
+            b = int(string_pandigital[mult_spot:equals_spot])
+            c = int(string_pandigital[equals_spot:])
+            if a * b == c:
+                output_dict[str(c)] = sorted([a, b])
+    if output_dict:
+        return output_dict
+    else:
+        return False
+
+q32_results = {}
+for each_pan in itertools.permutations(range(1, 10)):
+    temp_res = q32_check_pandigital_mults(''.join(str(x) for x in each_pan))
+    if temp_res:
+        for each_c_result in temp_res.keys():
+            if each_c_result not in q32_results.keys():
+                q32_results[each_c_result] = temp_res[each_c_result]
+
+sum(int(x) for x in q32_results.keys())
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q33
+'''The fraction 49/98 is a curious fraction, as an inexperienced mathematician in attempting to simplify it may incorrectly believe that 49/98 = 4/8, which is correct, is obtained by cancelling the 9s.
+
+We shall consider fractions like, 30/50 = 3/5, to be trivial examples.
+
+There are exactly four non-trivial examples of this type of fraction, less than one in value, and containing two digits in the numerator and denominator.
+
+If the product of these four fractions is given in its lowest common terms, find the value of the denominator.
+'''
+49/98
+
+q33_dub_digit_combos = list(x for x in itertools.product(range(0, 10), repeat=2) if x[0] != 0)
+
+def q33_check_naive_cancel(numerator, denominator):
+    output_list = []
+    actual_frac = int(''.join(str(x) for x in numerator)) / int(''.join(str(x) for x in denominator))
+
+    if numerator[0] == denominator[0] and numerator[0] != 0 and denominator[1] != 0 and numerator[1] / denominator [1] == actual_frac:
+        output_list.append(''.join(str(x) for x in numerator) + '/' +''.join(str(x) for x in denominator))
+    if numerator[1] == denominator[1] and numerator[1] != 0 and denominator[0] != 0 and numerator[0] / denominator[0] == actual_frac:
+        output_list.append(''.join(str(x) for x in numerator) + '/' +''.join(str(x) for x in denominator))
+
+    if numerator[0] == denominator[1] and numerator[1] != 0 and denominator[0] != 0 and numerator[1] / denominator[0] == actual_frac:
+        output_list.append(''.join(str(x) for x in numerator) + '/' +''.join(str(x) for x in denominator))
+    if numerator[1] == denominator[0] and numerator[0] != 0 and denominator[1] != 0 and numerator[0] / denominator[1] == actual_frac:
+        output_list.append(''.join(str(x) for x in numerator) + '/' +''.join(str(x) for x in denominator))
+
+    return output_list
+
+q33_check_naive_cancel((4, 9), (9, 8))
+
+[3, 4, 5]
+[3, 4, 5][1:]
+
+q33_res = []
+for q33_d_idx, q33_denom in enumerate(sorted(q33_dub_digit_combos)):
+    for q33_numerator in q33_dub_digit_combos[:q33_d_idx]:
+        temp_res = q33_check_naive_cancel(q33_numerator, q33_denom)
+        if temp_res:
+            q33_res.extend(temp_res)
+
+print(q33_res)
+len(q33_res)
+q33_ans = 1
+[q33_ans*int(x) for x in q33_res]
+16/64*26/65*19/95*49/98
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q34
+'''145 is a curious number, as 1! + 4! + 5! = 1 + 24 + 120 = 145.
+
+Find the sum of all numbers which are equal to the sum of the factorial of their digits.
+
+Note: as 1! = 1 and 2! = 2 are not sums they are not included.
+'''
+import math
+
+for n in range(3, 10000000000):
+    if sum(math.factorial(int(x)) for x in str(n)) == n:
+        print(n)
+
+145+40585
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q35
+'''
+The number, 197, is called a circular prime because all rotations of the digits: 197, 971, and 719, are themselves prime.
+
+There are thirteen such primes below 100: 2, 3, 5, 7, 11, 13, 17, 31, 37, 71, 73, 79, and 97.
+
+How many circular primes are there below one million?
+'''
+q35_all_rotations_prime(197)
+q35_all_rotations_prime(140)
+
+q_35_circ_primes_list = []
+for n in range(100, 1000001):
+    s = str(n)
+    if all(is_prime(int(s[x:] + s[:x])) for x in range(len(s))):
+        q_35_circ_primes_list.append(s)
+
+print(13+len(q_35_circ_primes_list))
+
+len(list(s for s in range(100, 1000001) if all(is_prime(int(str(s)[x:] + str(s)[:x])) for x in range(len(str(s))))))
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q36
+'''The decimal number, 585 = 10010010012 (binary), is palindromic in both bases.
+
+Find the sum of all numbers, less than one million, which are palindromic in base 10 and base 2.
+
+(Please note that the palindromic number, in either base, may not include leading zeros.)
+'''
+"{0:b}".format(585)  # without the '0b' in front
+
+sum(n for n in range(1000001) if str(n) == str(n)[::-1] and "{0:b}".format(n) == "{0:b}".format(n)[::-1])
+
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q37
+'''
+The number 3797 has an interesting property. Being prime itself, it is possible to continuously remove digits from left
+to right, and remain prime at each stage: 3797, 797, 97, and 7. Similarly we can work from right to left:
+3797, 379, 37, and 3.
+
+Find the sum of the only eleven primes that are both truncatable from left to right and right to left.
+NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
+'''
+string_n = '3793'
+def q38_truncatable_prime_front(string_n):
+    n = int(string_n)
+    if n < 10:
+        return is_prime(n)
+
+    else:
+        return is_prime(n) and q38_truncatable_prime_front(string_n[1:])
+
+def q38_truncatable_prime_back(string_n):
+    n = int(string_n)
+    if n < 10:
+        return is_prime(n)
+    else:
+        return is_prime(n) and q38_truncatable_prime_back(string_n[:-1])
+
+# t = list(is_prime(int(str(n)[x:])) and is_prime(int(str(n)[:-y])) for n in range(9, 10000000, 2) for x in range(len(str(n))) for y in range(1, len(str(n))))
+
+target_set = (n for n in range(9, 10000000, 2) if is_prime(n))
+
+q38_output = []
+for _ in target_set:
+    if all(is_prime(int(str(_)[x:])) for x in range(len(str(_)))) and all(is_prime(int(str(_)[:-y])) for y in range(1, len(str(_)))):
+        q38_output.append(_)
+print(q38_output)
+len(q38_output)
+sum(q38_output)-25
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q38
+'''
+
+'''
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q39
+'''
+
 '''
 
 #_________________#_________________#_________________#_________________#_________________#_________________
-#Q2
+#Q40
 '''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q41
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q42
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q43
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q44
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q45
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q46
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q47
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q48
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q49
+'''
+
+'''
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
 '''
 
 
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
 
-#_____________________________________________________________________________________________________________________
+'''
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
