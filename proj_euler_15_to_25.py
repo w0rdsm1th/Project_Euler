@@ -569,7 +569,7 @@ e.g. |-11|=11 and |−4|=4
 Find the product of the coefficients, a and b, for the quadratic expression that produces the maximum number of primes for consecutive values of n, starting with n=0.
 '''
 from math import ceil
-range(25)
+
 def is_prime(n):
     if n <= 1:
         return False
@@ -909,46 +909,336 @@ for _ in target_set:
         q38_output.append(_)
 print(q38_output)
 len(q38_output)
-sum(q38_output)-25
+sum(q38_output)
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q38
 '''
+Take the number 192 and multiply it by each of 1, 2, and 3:
 
+192 × 1 = 192
+192 × 2 = 384
+192 × 3 = 576
+By concatenating each product we get the 1 to 9 pandigital, 192384576. We will call 192384576 the concatenated product of 192 and (1,2,3)
+
+The same can be achieved by starting with 9 and multiplying by 1, 2, 3, 4, and 5, giving the pandigital, 918273645, which is the concatenated product of 9 and (1,2,3,4,5).
+
+What is the largest 1 to 9 pandigital 9-digit number that can be formed as the concatenated product of an integer with (1,2, ... , n) where n > 1?
 '''
+
+def is_pandigital(n):
+    return sorted(set(str(n))) == sorted(set('0123456789'))
+
+is_pandigital('123456789')
+is_pandigital('1234589')
+
+# simple, no generators
+q38_prods = (1, 2)
+q38_highest_seen = 918273645
+q38_highest_prods = {'prods':(1, 2, 3, 4, 5), 'mult':9}
+q38_curr = 0
+
+q38_stop_crit1 = 987654321
+q38_stop_crit2 = (1, 2, 3, 4, 5, 6, 7, 8)
+
+n = 1
+while True:
+    n+=1
+    concat_prod = int(''.join((str(x) for x in (n*y for y in q38_prods))))
+    if is_pandigital(concat_prod):
+        if concat_prod > q38_highest_seen:
+            q38_highest_prods['prods'] = q38_prods
+            q38_highest_prods['mult'] = n
+
+    if concat_prod > q38_stop_crit1:
+        # incrementing the product set, starting multiplier search again
+        q38_prods += (q38_prods[-1]+1, )
+        n = 1
+
+    if q38_prods == q38_stop_crit2:
+        print('DONE SEARCH, highest found: {}'.format(int(''.join((str(x) for x in (q38_highest_prods['mult']*y for y in q38_highest_prods['prods']))))))
+        break
+
+
+
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q39
 '''
+If p is the perimeter of a right angle triangle with integral length sides, {a,b,c}, there are exactly three solutions for p = 120.
 
+{20,48,52}, {24,45,51}, {30,40,50}
+
+For which value of p ≤ 1000, is the number of solutions maximised?
 '''
+q39_highest_p = 3
+q39_highest_p_solutions = []
+
+for p in range(3, 1001):
+    solutions = list(((p-c-b), b, c, p) for c in range(1, p) for b in range(1, p-c) if
+                     (p - c - b) ** 2 + b ** 2 == c ** 2)
+    if len(solutions) > len(q39_highest_p_solutions):
+        q39_highest_p = p
+        q39_highest_p_solutions = solutions
+    if p%100 == 0:
+        print('current p: ', p)
+print('DONE highest found: ', q39_highest_p)
+
+
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q40
 '''
+An irrational decimal fraction is created by concatenating the positive integers:
 
+0.123456789101112131415161718192021...
+
+It can be seen that the 12th digit of the fractional part is 1.
+
+If dn represents the nth digit of the fractional part, find the value of the following expression.
+
+d1 × d10 × d100 × d1000 × d10000 × d100000 × d1000000
 '''
+# q40_idx_list = [1, 10, 100, 1000, 10000, 100000, 1000000]
+
+q40_idx_list = [10**n for n in range(7)]
+
+def q40_concat_count_fraction(frac, next_int, q40_idx_list_input):
+    while True:
+        frac = str(frac) + str(next_int)
+        next_int+=1
+        if len(str(frac)) > q40_idx_list_input[-1]+1:
+            break
+    return([str(frac)[_+1] for _ in q40_idx_list_input])
+
+
+
+[int(x) for x in q40_concat_count_fraction(0.1, 2, q40_idx_list)]
+1*1*5*3*7*2*1
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q41
 '''
+We shall say that an n-digit number is pandigital if it makes use of all the digits 1 to n exactly once.
+For example, 2143 is a 4-digit pandigital and is also prime.
 
+What is the largest n-digit pandigital prime that exists?
 '''
+import itertools
+q41_stop_crit1 = 987654321  # obvious ceiling value to search to - largest odd pandigital
+
+
+any(is_prime(int(''.join([str(_) ])) for _ in n for n in perms))
+
+t = [n for n in perms[::-1] for _ in n if is_prime(int(''.join(str(_))))][0]
+
+q41_all_dig = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+while True:
+    perms = list(itertools.permutations(q41_all_dig))
+    for each_num in perms[::-1]:
+        int_each_num = int(''.join([str(_) for _ in each_num]))
+        if is_prime(int_each_num):
+            print(int_each_num)
+            break
+    q41_all_dig = q41_all_dig[:-1]
+    if len(q41_all_dig) == 2:
+        break
+
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q42
 '''
+The nth term of the sequence of triangle numbers is given by, tn = ½n(n+1); so the first ten triangle numbers are:
 
+1, 3, 6, 10, 15, 21, 28, 36, 45, 55, ...
+
+By converting each letter in a word to a number corresponding to its alphabetical position and adding these values we form a word value. For example, the word value for SKY is 19 + 11 + 25 = 55 = t10. If the word value is a triangle number then we shall call the word a triangle word.
+
+Using words.txt (right click and 'Save Link/Target As...'), a 16K text file containing nearly two-thousand common English words, how many are triangle words?
 '''
+import string
+from math import ceil
+q42_file = r"C:\Users\IBM_ADMIN\Documents\2 - Project_Euler\p042_words.txt"
+
+
+def q42_word_value(word_string):
+    return sum(string.ascii_uppercase.index(_.upper())+1 for _ in word_string)
+
+def q42_increment_tri_nums(stop_int):
+    stop_range = ceil((-1+(1+8*stop_int)**.5)/2)  # using quadratic formula to solve for
+    return [int(0.5*(_+1)*(_+2)) for _ in range(stop_range)]
+
+with open(q42_file, 'r') as f:
+    q42_all_file_words = [word.strip('"') for line in f for word in line.split(',')]
+    tri_num_series = [1, 3]
+    tri_word_counter = 0
+    non_tri_word_counter = 0
+    for each_word in q42_all_file_words:
+        curr_word_value = q42_word_value(each_word)
+
+        if curr_word_value > tri_num_series[-1]:
+            old_tri_num_series_limit = tri_num_series[-1]
+            tri_num_series = q42_increment_tri_nums(curr_word_value)
+            print('incremented tri_nums, from {} to {}'.format(old_tri_num_series_limit, tri_num_series[-1]))
+
+        if curr_word_value in tri_num_series:
+            tri_word_counter+=1
+
+        if curr_word_value not in tri_num_series:
+            non_tri_word_counter+=1
+
+    assert non_tri_word_counter + tri_word_counter == len(q42_all_file_words)
+    print('Done! total number of triangular words: ', tri_word_counter)
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q43
 '''
+The number, 1406357289, is a 0 to 9 pandigital number because it is made up of each of the digits 0 to 9 in some order, but it also has a rather interesting sub-string divisibility property.
 
+Let d1 be the 1st digit, d2 be the 2nd digit, and so on. In this way, we note the following:
+
+d2d3d4=406 is divisible by 2
+d3d4d5=063 is divisible by 3
+d4d5d6=635 is divisible by 5
+d5d6d7=357 is divisible by 7
+d6d7d8=572 is divisible by 11
+d7d8d9=728 is divisible by 13
+d8d9d10=289 is divisible by 17
+Find the sum of all 0 to 9 pandigital numbers with this property.
 '''
+
+# substrings are divisible by incrementing primes
+from itertools import permutations
+
+def is_pandigital_0to9(n):
+    return sorted(set(str(n))) == sorted(str(n)) == sorted('0123456789')
+
+def q43_substr_division(n):
+    # assert is_pandigital_0to9(n)
+    divs = (2, 3, 5, 7, 11, 13, 17)
+    # list(int(str(n)[div_idx:][1:4]) for div_idx, each_div in enumerate(divs))
+    all(int(str(n)[div_idx:][1:4]) % each_div == 0 for div_idx, each_div in enumerate(divs))
+
+def q43_concat_tuple(tup_input):
+    s = ''.join(map(str, tup_input))
+    return int(s)
+
+q43_concat_tuple((9, 8, 1, 4, 5, 0, 6, 2, 3, 7))
+
+q43_ans = sum(q43_concat_tuple(_) for _ in permutations(range(0, 10)) if q43_substr_division(q43_concat_tuple(_)))
+
+
+
+
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q44
 '''
+Pentagonal numbers are generated by the formula, Pn=n(3n−1)/2. The first ten pentagonal numbers are:
+
+1, 5, 12, 22, 35, 51, 70, 92, 117, 145, ...
+
+It can be seen that P4 + P7 = 22 + 70 = 92 = P8. However, their difference, 70 − 22 = 48, is not pentagonal.
+
+Find the pair of pentagonal numbers, Pj and Pk, for which their sum and difference are pentagonal and D = |Pk − Pj| is minimised; what is the value of D?
+'''
+%pylab
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.arange(0.0, 2000.0, 1)
+y = 0.5*x*(3*x - 1)
+plt.plot(x, y)
+
+# sum AND difference are pentagonal
+# ie the solution is a whole number IF plugged into the pentagonal quadratic
+# the difference abs(pj - pk) is minimised
+q44_demo_cannot_use_quadratic1 = 12
+q44_demo_cannot_use_quadratic2 = 13
+(1+(24*q44_demo_cannot_use_quadratic1)**.5)/6
+(1+(24*q44_demo_cannot_use_quadratic2)**.5)/6
+
+
+from itertools import combinations
+from math import ceil
+import pandas as pd
+from datetime import datetime
+from operator import itemgetter  # to be able to 'extract' items from tuples nested in lists
+
+
+def q44_check_pentagonal(input_int, pent_tuple):
+    assert isinstance(input_int, int) and input_int%1 == 0
+    if input_int > pent_tuple[-1]:
+        q44_stop_crit = ceil((1+(24*input_int)**.5)/6)
+        assert len(pent_tuple) <= q44_stop_crit
+        pent_tuple = pent_tuple + tuple(int(0.5 * _ * (3 * _ - 1)) for _ in range(len(pent_tuple) + 1, q44_stop_crit + 1))
+    return (input_int in pent_tuple, pent_tuple)
+
+q44_check_pentagonal(1000, t)
+q44_check_pentagonal(1926, t)
+q44_check_pentagonal(92, t)
+q44_check_pentagonal(48, t)
+q44_check_pentagonal((22 + 70), t)
+
+
+def q44_check_diff_pentagonal(pj_pk_comb, pent_tuple):
+#     assert isinstance(pj_pk_comb[0], int) and isinstance(pj_pk_comb[1], int)
+    return abs(pj_pk_comb[0] - pj_pk_comb[1]) in pent_tuple
+
+def q44_pent_generator():
+    n = 0
+    while True:
+        yield int(0.5 * n * (3 * n - 1))
+        n+=1
+
+# for a new pentagonal:
+# check if difference with each of the other, pre-created pentagonals is pentagonal
+# if yes, create sum of both pentagonals and store
+# at intervals, check the sums created to see if pentagonal (if contained in list)
+
+tlong = tuple(int(0.5 * _ * (3 * _ - 1)) for _ in range(1, 100))
+tlong_combo_diffs = [(abs(_[0] - _[1]), _) for _ in combinations(tlong, 2)]
+tlong_combo_sums = [(_[0] + _[1], _) for _ in combinations(tlong, 2)]
+
+tlong_combo_diffs.sort(key=itemgetter(0))
+tlong_combo_diffs_filtered = [_ for _ in tlong_combo_diffs if _[0] in tlong]
+tlong_combo_sums_filtered = [_ for _ in tlong_combo_sums if _[0] in tlong]
+
+tlong_sums = [_[1] for _ in tlong_combo_diffs_filtered]
+tlong_diffs = [_[1] for _ in tlong_combo_sums_filtered]
+
+
+
+
+tlong[-1]
+tlong[-1] - tlong[70000]*2
+gen = q44_pent_generator()
+new_pent = next(gen)
+
+new_pent = next(gen)
+
+t_lower_limit, t_upper_limit = 999, 2000
+t = tuple(int(0.5 * _ * (3 * _ - 1)) for _ in range(t_lower_limit, t_upper_limit+1))
+q44_diff_combs = [(combs, abs(combs[0] - combs[1]), combs[0]+combs[1]) for combs in combinations(t, 2) if abs(combs[0] - combs[1])in t]
+
+
+
+# plan: for pentagonal series 2-combinations, calc their difference, if diff itself pentagonal, record
+# with recorded differences, sort so that lowest diff combination is first
+# plot behaviour of combinations as difference decreases (3d space??)
+# find first combination in series of tuples that have pentagonal sum
+
+pre = datetime.now()
+q44_diff_combs = [(combs, abs(combs[0] - combs[1]), combs[0]+combs[1]) for combs in combinations(tlong, 2) if
+                  abs(combs[0] - combs[1])in tlong and combs[0]+combs[1] in tlong]
+post = datetime.now()
+print(post - pre)
+
+'''
+LESSONS LEARNED
+1. rounding error quickly renders mathematical checking of actual numbers inaccurate. (e.g. quadratic formula on large numbers)
+
+2. dont use type(something) == int, use isinstance(something, int)
+
 
 '''
 
@@ -958,30 +1248,71 @@ sum(q38_output)-25
 
 '''
 
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
+
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q46
 '''
 
 '''
 
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q47
 '''
 
 '''
 
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q48
 '''
 
 '''
 
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q49
 '''
 
 '''
 
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q5
 '''
@@ -989,26 +1320,13 @@ sum(q38_output)-25
 '''
 
 
-#_________________#_________________#_________________#_________________#_________________#_________________
-#Q5
 '''
+LESSONS LEARNED
+1.
 
-'''
-
-
-#_________________#_________________#_________________#_________________#_________________#_________________
-#Q5
-'''
+2.
 
 '''
-
-
-#_________________#_________________#_________________#_________________#_________________#_________________
-#Q5
-'''
-
-'''
-
 
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q5
@@ -1017,9 +1335,71 @@ sum(q38_output)-25
 '''
 
 
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
 #_________________#_________________#_________________#_________________#_________________#_________________
 #Q5
 '''
 
 '''
 
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
+#_________________#_________________#_________________#_________________#_________________#_________________
+#Q5
+'''
+
+'''
+
+
+
+'''
+LESSONS LEARNED
+1.
+
+2.
+
+'''
