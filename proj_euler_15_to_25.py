@@ -1158,10 +1158,10 @@ q44_demo_cannot_use_quadratic2 = 13
 (1+(24*q44_demo_cannot_use_quadratic2)**.5)/6
 
 
-from itertools import combinations
 from math import ceil
-import pandas as pd
 from datetime import datetime
+
+from itertools import combinations
 from operator import itemgetter  # to be able to 'extract' items from tuples nested in lists
 
 
@@ -1195,22 +1195,24 @@ def q44_pent_generator():
 # if yes, create sum of both pentagonals and store
 # at intervals, check the sums created to see if pentagonal (if contained in list)
 
-tlong = tuple(int(0.5 * _ * (3 * _ - 1)) for _ in range(1, 100))
-tlong_combo_diffs = [(abs(_[0] - _[1]), _) for _ in combinations(tlong, 2)]
-tlong_combo_sums = [(_[0] + _[1], _) for _ in combinations(tlong, 2)]
+pent_tuple = tuple(int(0.5 * _ * (3 * _ - 1)) for _ in range(1, 10000))
+tlong_combo_diffs = ((abs(_[0] - _[1]), _) for _ in combinations(pent_tuple, 2))
+tlong_combo_sums = ((_[0] + _[1], _) for _ in combinations(pent_tuple, 2))
+
+tlong_combo_diffs_filtered = (_ for _ in tlong_combo_diffs if _[0] in pent_tuple)
+tlong_combo_sums_filtered = (_ for _ in tlong_combo_sums if _[0] in pent_tuple)
+
+tlong_sums = (_[1] for _ in tlong_combo_diffs_filtered)
+tlong_diffs = (_[1] for _ in tlong_combo_sums_filtered)
+
+q44_in_both = [_ for _ in tlong_sums if _ in tlong_diffs]
 
 tlong_combo_diffs.sort(key=itemgetter(0))
-tlong_combo_diffs_filtered = [_ for _ in tlong_combo_diffs if _[0] in tlong]
-tlong_combo_sums_filtered = [_ for _ in tlong_combo_sums if _[0] in tlong]
-
-tlong_sums = [_[1] for _ in tlong_combo_diffs_filtered]
-tlong_diffs = [_[1] for _ in tlong_combo_sums_filtered]
 
 
 
-
-tlong[-1]
-tlong[-1] - tlong[70000]*2
+pent_tuple[-1]
+pent_tuple[-1] - pent_tuple[70000] * 2
 gen = q44_pent_generator()
 new_pent = next(gen)
 
@@ -1228,8 +1230,8 @@ q44_diff_combs = [(combs, abs(combs[0] - combs[1]), combs[0]+combs[1]) for combs
 # find first combination in series of tuples that have pentagonal sum
 
 pre = datetime.now()
-q44_diff_combs = [(combs, abs(combs[0] - combs[1]), combs[0]+combs[1]) for combs in combinations(tlong, 2) if
-                  abs(combs[0] - combs[1])in tlong and combs[0]+combs[1] in tlong]
+q44_diff_combs = [(combs, abs(combs[0] - combs[1]), combs[0]+combs[1]) for combs in combinations(pent_tuple, 2) if
+                  abs(combs[0] - combs[1]) in pent_tuple and combs[0] + combs[1] in pent_tuple]
 post = datetime.now()
 print(post - pre)
 

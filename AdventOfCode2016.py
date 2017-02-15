@@ -35,7 +35,7 @@ def q1_taxi_cab_interp(input_dir_list):
             curr_position[0] -= fwd
     return {'curr_heading':curr_heading, 'curr_position':curr_position}
 
-#test cases
+#Xtest cases
 q1_taxi_cab_interp(['R2', 'R2', 'R2', 'R2'])
 q1_taxi_cab_interp(['R2', 'R2', 'R2'])
 q1_taxi_cab_interp(['R5', 'L5', 'R5', 'R3'])
