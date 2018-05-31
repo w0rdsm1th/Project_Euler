@@ -4,6 +4,8 @@ import math
 from pprint import pprint as print
 import pandas as pd
 
+import util as ut
+
 #question 15 - lattice paths. finding
 n=20
 print(math.factorial((2*n))/math.factorial(n)**2)
@@ -568,20 +570,6 @@ where |n||n| is the modulus/absolute value of nn
 e.g. |-11|=11 and |−4|=4
 Find the product of the coefficients, a and b, for the quadratic expression that produces the maximum number of primes for consecutive values of n, starting with n=0.
 '''
-from math import ceil
-
-def is_prime(n):
-    if n <= 1:
-        return False
-    if n <= 3:
-        return True
-    if n%2==0 or n%3==0:
-        return False
-    else:
-        if any(n%divisors==0 or n%(divisors+2)==0 for divisors in range(5, ceil(n**0.5)+1, 2)):
-            return False
-        else:
-            return True
 
 def eul_quad(n):
     return n**2+n+41
@@ -591,7 +579,7 @@ def generic_quad(n, a, b):
 
 res_list = (eul_quad(x) for x in range(0, 40))
 res_list = (generic_quad(x, 1, 41) for x in range(0, 40))
-all(is_prime(generic_quad(x, -79, 1601)) for x in range(0, 81))
+all(ut.is_prime(generic_quad(x, -79, 1601)) for x in range(0, 81))
 
 # for combo of a and b, check from n=0 if values produced are prime, find the largest such value of n that this still true
 highest_consec_primes = 0
@@ -601,7 +589,7 @@ for beta in range(-1001, 1001):
         n = 0
         while True:
             quad_out = generic_quad(n, alpha, beta)
-            if not is_prime(quad_out):
+            if not ut.is_prime(quad_out):
                 break
             if n > highest_consec_primes:
                 highest_alpha, highest_beta, highest_consec_primes = alpha, beta, n
@@ -611,7 +599,7 @@ print('highest_alpha: ', highest_alpha, '\n',
       'highest_beta: ', highest_beta, '\n',
       'answer: ', highest_alpha*highest_beta)
 
-all(is_prime(generic_quad(x, highest_alpha, highest_beta)) for x in range(0, highest_consec_primes+1))
+all(ut.is_prime(generic_quad(x, highest_alpha, highest_beta)) for x in range(0, highest_consec_primes+1))
 
 
 
@@ -899,7 +887,7 @@ def q38_truncatable_prime_back(string_n):
     else:
         return is_prime(n) and q38_truncatable_prime_back(string_n[:-1])
 
-# t = list(is_prime(int(str(n)[x:])) and is_prime(int(str(n)[:-y])) for n in range(9, 10000000, 2) for x in range(len(str(n))) for y in range(1, len(str(n))))
+# t = list(is_prime.py(int(str(n)[x:])) and is_prime.py(int(str(n)[:-y])) for n in range(9, 10000000, 2) for x in range(len(str(n))) for y in range(1, len(str(n))))
 
 target_set = (n for n in range(9, 10000000, 2) if is_prime(n))
 
@@ -1141,7 +1129,7 @@ It can be seen that P4 + P7 = 22 + 70 = 92 = P8. However, their difference, 70 �
 
 Find the pair of pentagonal numbers, Pj and Pk, for which their sum and difference are pentagonal and D = |Pk − Pj| is minimised; what is the value of D?
 '''
-%pylab
+# %pylab
 import matplotlib.pyplot as plt
 import numpy as np
 

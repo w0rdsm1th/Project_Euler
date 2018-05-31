@@ -1,0 +1,58 @@
+
+import util as ut
+import math
+
+"""
+It was proposed by Christian Goldbach that every odd composite number can be written as the sum of a prime 
+and twice a square.
+
+9 = 7 + 2×1**2
+15 = 7 + 2×2**2
+21 = 3 + 2×3**2
+25 = 7 + 2×3**2
+27 = 19 + 2×2**2
+33 = 31 + 2×1**2
+
+It turns out that the conjecture was false.
+
+What is the smallest odd composite that cannot be written as the sum of a prime and twice a square?
+"""
+
+# 1. check if odd, and composite (not 1, not prime)
+# 1b.
+# 2. find primes lower than the number
+# 2. in descending order, for all primes lower, sequentially check all squares
+# 3.
+
+
+def is_goldbach(n: int = 9):
+    primes_seen = [prime for prime in range(1, n) if ut.is_prime(prime)]
+
+    def _check_goldbach(num, primes):
+        for prime in primes[::-1]:
+            for sqr in range(1, int(math.ceil(math.sqrt(num / 2)))):
+                if num == prime + 2*sqr**2:
+                    # print('TRUE! prime {0}, sqr {1}'.format(prime, sqr))
+                    return True
+
+        else:
+            print('FALSE! num {0}'.format(num))
+            return False
+
+    while True:
+
+        if ut.is_prime(n):
+            primes_seen.append(n)
+
+        else:
+            yield _check_goldbach(n, primes_seen)
+
+        n += 2
+
+gener = is_goldbach()
+while True:
+    curr_check = next(gener)
+    if not curr_check:
+        break
+
+

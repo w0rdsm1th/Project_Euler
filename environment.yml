@@ -1,0 +1,6 @@
+name: project_euler
+dependencies:
+  - python=3.6
+  - numpy=1.14.*
+  - pandas=0.22.*
+  - matplotlib
