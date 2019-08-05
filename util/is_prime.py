@@ -5,6 +5,11 @@ import numba as nb
 
 @nb.jit(nopython=True)
 def is_prime(n):
+    """
+    checks if n is prime
+    sieve erastothenes method of checking divisors up to round(sqrt)
+    :returns BOOL: True if is_prime, False if not
+    """
     # early termination checks
     if n <= 1:
         return False

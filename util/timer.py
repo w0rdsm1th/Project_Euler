@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-convenience deocrator to time and print function execution timing
+convenience deocrator to time and print function execution timer
 
 adapted from
 """
@@ -9,18 +9,23 @@ adapted from
 import functools
 import itertools
 import util
+import logging
 
-from functools import wraps
+import datetime as dt
+import functools as ft
 from time import time
 
+# _log = logging.getLogger(level="INFO")
 
-def timing(f):
-    @wraps(f)
+
+def timer(f):
+    @ft.wraps(f)
     def wrap(*args, **kw):
-        ts = time()
+        start = time()
+        # _log.info(f"function {f.__name__} started")
+        print(f"function {f.__name__} started {dt.datetime.now().strftime('%H:%M:%S')}")
         result = f(*args, **kw)
-        te = time()
-        print(f'func:%r args:[%r, %r] took: %2.4f sec' % \
-              (f.__name__, args, kw, te-ts))
+        end = time()
+        print(f'func:{f.__name__} took: {end-start:.4f} seconds')  # args:[{args}, {kw}]
         return result
     return wrap
