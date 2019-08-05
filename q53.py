@@ -24,7 +24,7 @@ How many, not necessarily distinct, values of  nCr, for 1 ≤ n ≤ 100, are gre
 """
 
 """LEARNINGS
-- timing using std lib itertools combinatorics versus own n_choose_r
+- timer using std lib itertools combinatorics versus own n_choose_r
 - itertools reduce
 """
 
