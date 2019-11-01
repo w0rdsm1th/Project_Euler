@@ -100,7 +100,7 @@ class PrimeFinder:
 
 if __name__ == "__main__":
     prime_finder = PrimeFinder()
-    # prime_finder.find_primes(ceiling=100_000_000)
+    prime_finder.find_primes(ceiling=100_000_000)
     # prime_finder.find_primes(timelimit_seconds=30)
 
     prime_finder.prime_diagnostics()
